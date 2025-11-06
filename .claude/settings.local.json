@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(git -C /d/git/github/myaccount-front log --all --oneline --max-count=10)",
+      "Bash(git -C /d/git/github/myaccount-front branch -a)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
