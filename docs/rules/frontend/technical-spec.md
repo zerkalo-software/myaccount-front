@@ -6,20 +6,21 @@ TypeScript-based React application implementation. Architecture patterns should 
 ## Environment Variable Management and Security
 
 ### Environment Variable Management
-- **Use build tool's environment variable system**: `process.env` does not work in browser environments
-- Centrally manage environment variables through configuration layer
+- **Use Next.js environment variables**: `process.env.NEXT_PUBLIC_*` values are statically inlined at build and safe for client use
+- Centrally manage environment variables through a configuration layer
 - Implement proper type safety with TypeScript
 - Properly implement default value settings and mandatory checks
 
 ```typescript
-// ✅ Build tool environment variables (public values only)
+// ✅ Next.js environment variables (public values only with NEXT_PUBLIC_)
 const config = {
-  apiUrl: import.meta.env.API_URL || 'http://localhost:3000',
-  appName: import.meta.env.APP_NAME || 'My App'
+  apiUrl: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000',
+  appName: process.env.NEXT_PUBLIC_APP_NAME ?? 'My App',
 }
 
-// ❌ Does not work in frontend
-const apiUrl = process.env.API_URL
+// ❌ Private variables on client
+// Use only on the server (Server Components / Server Actions), not in client components
+const privateKey = process.env.SECRET_API_KEY
 ```
 
 ### Security (Client-side Constraints)
@@ -32,7 +33,7 @@ const apiUrl = process.env.API_URL
 **Correct Approach for Secrets**:
 ```typescript
 // ❌ Security risk: API key exposed in browser
-const apiKey = import.meta.env.API_KEY
+const apiKey = process.env.NEXT_PUBLIC_API_KEY
 const response = await fetch(`https://api.example.com/data?key=${apiKey}`)
 
 // ✅ Correct: Backend manages secrets, frontend accesses via proxy
@@ -106,51 +107,32 @@ async function fetchUser(id: string): Promise<User> {
 ### Build Commands
 ```bash
 # Development server
-npm run dev
+pnpm run dev
 
 # Production build
-npm run build
+pnpm run build
 
-# Preview production build
-npm run preview
+# Start production build (Next.js)
+pnpm run start
 
-# Type check (no emit)
-npm run type-check
 ```
 
-### Testing Commands
+### Linting
 ```bash
-# Run tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run tests with coverage (fresh cache)
-npm run test:coverage:fresh
-
-# Safe test execution (with auto cleanup)
-npm run test:safe
-
-# Cleanup Vitest processes
-npm run cleanup:processes
+pnpm run lint
 ```
 
 ### Quality Check Requirements
 Quality checks are mandatory upon implementation completion:
 
-**Phase 1-3: Basic Checks**
+**Basic Checks**
 ```bash
-npm run check        # Biome (lint + format)
-npm run build        # TypeScript build
+pnpm run lint         # ESLint
+pnpm run build        # Next.js build
 ```
 
-**Phase 4-5: Tests and Final Confirmation**
-```bash
-npm test                    # Test execution
-npm run test:coverage:fresh # Coverage measurement
-npm run check:all           # Overall integrated check
-```
+**Optional (if test scripts exist in the future)**
+Add test and coverage commands once configured.
 
 ### Coverage Requirements
 - **Mandatory**: Unit test coverage must be 60% or higher

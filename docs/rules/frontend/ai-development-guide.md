@@ -1,5 +1,16 @@
 # AI Developer Guide - Technical Decision Criteria and Anti-pattern Collection (Frontend)
 
+## Project-specific Defaults (This Repository)
+
+- **Framework**: React 19 + Next.js (App Router, Server Components, Server Actions)
+- **State Management**: Zustand (multiple domain stores, `combine`, `useShallow`)
+- **Type System**: TypeScript (strict) + Zod validation + type guards
+- **Testing**: Vitest + React Testing Library + MSW
+- **Quality**: ESLint (`pnpm run lint`), coverage target ≥ 60%
+- **Performance**: React Compiler enabled/expected; prefer compiler over manual memoization
+- **CSS Naming**: BEM class notation for all components (`block__element--modifier`)
+- **Localization**: All user-visible text must use i18n (no hardcoded strings)
+
 ## Technical Anti-patterns (Red Flag Patterns)
 
 Immediately stop and reconsider design when detecting the following patterns:
@@ -12,8 +23,13 @@ Immediately stop and reconsider design when detecting the following patterns:
 5. **Disabling code with comments** - Should use version control
 6. **Error suppression** - Hiding problems creates technical debt
 7. **Excessive use of type assertions (as)** - Abandoning type safety
-8. **Prop drilling through 3+ levels** - Should use Context API or state management
+8. **Prop drilling through 3+ levels** - Use Context or a dedicated Zustand store
 9. **Massive components (300+ lines)** - Split into smaller components
+10. **Manual memoization everywhere (`useMemo`, `useCallback`, `React.memo`) without measurement** - Prefer React Compiler defaults; add manual memoization only for measured hotspots
+11. **Monolithic global store** - Split into multiple domain stores (Auth/UI/Data, etc.) per Zustand guidance
+12. **Deep nested state updates without Immer** - Use manual spreads for shallow, Immer middleware for deep updates (4+ levels)
+13. **Non-BEM CSS class names** - All CSS classes must follow BEM (`block__element--modifier`)
+14. **Hardcoded user-visible strings** - Must be localized via i18n keys
 
 ### Design Anti-patterns
 - **"Make it work for now" thinking** - Accumulation of technical debt
@@ -31,8 +47,9 @@ Design philosophy that prioritizes improving primary code reliability over fallb
 - **Default Prohibition**: Do not implement unconditional fallbacks on errors
 - **Exception Approval**: Implement only when explicitly defined in Design Doc
 - **Layer Responsibilities**:
-  - Component Layer: Use Error Boundary for error handling
-  - Hook Layer: Implement decisions based on business requirements
+  - Component Layer: Use Error Boundaries (or `react-error-boundary`) for render errors; show user-friendly fallback UI
+  - Hook/Store Layer: Handle async errors with `try/catch`, maintain typed error state in Zustand, provide retry/reset actions
+  - Server Components/Actions: Prefer server-side handling and Next.js caching/revalidation strategies
 
 ### Detection of Excessive Fallbacks
 - Require design review when writing the 3rd catch statement in the same feature
@@ -84,7 +101,7 @@ function EmailInput({ context }: { context: 'user' | 'contact' | 'admin' }) { /*
 ### Pattern 2: Abandoning Type Safety
 **Symptom**: Excessive use of any type or as
 **Cause**: Impulse to avoid type errors
-**Avoidance**: Handle safely with unknown type and type guards
+**Avoidance**: Use `unknown` + Zod validation at boundaries and type guards; assert only after validation
 
 ### Pattern 3: Implementation Without Sufficient Testing
 **Symptom**: Many bugs after implementation
@@ -149,48 +166,18 @@ console.log('DEBUG:', {
 
 ## Quality Check Command Reference
 
-### Phase 1-3: Basic Checks
+### Basic Checks
 ```bash
-# Biome comprehensive check (lint + format)
-npm run check
+# Lint
+pnpm run lint
 
 # TypeScript build
-npm run build
-```
-
-### Phase 4-5: Tests and Final Confirmation
-```bash
-# Test execution
-npm test
-
-# Coverage measurement (clear cache)
-npm run test:coverage:fresh
-
-# Overall integrated check
-npm run check:all
-```
-
-### Auxiliary Commands
-```bash
-# Check coverage report
-open coverage/index.html
-
-# Vitest process cleanup (mandatory after tests)
-npm run cleanup:processes
-
-# Safe test execution (with auto cleanup)
-npm run test:safe
-
-# Auto fixes
-npm run format        # Format fixes
-npm run lint:fix      # Lint fixes
+pnpm run build
 ```
 
 ### Troubleshooting
-- **Port in use error**: `npm run cleanup:processes`
-- **Cache issues**: `npm run test:coverage:fresh`
-- **Dependency errors**: Reinstall with `npm ci`
-- **Vite preview not starting**: Check port 4173 availability
+- **Dependency errors**: Reinstall with `pnpm install --frozen-lockfile`
+- **Next.js dev/preview not starting**: Ensure port 3000 is free (use `PORT=3001 pnpm run dev` to override)
 
 ## Situations Requiring Technical Decisions
 
@@ -201,7 +188,8 @@ npm run lint:fix      # Lint fixes
 
 ### Performance vs Readability
 - Prioritize readability unless clear bottleneck exists
-- Measure before optimizing (don't guess, use React DevTools Profiler)
+- Measure before optimizing (don't guess, use React DevTools Profiler, Lighthouse)
+- Prefer React Compiler defaults; add manual memoization only for measured hotspots
 - Document reason with comments when optimizing
 
 ### Granularity of Component/Type Definitions

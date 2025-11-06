@@ -4,7 +4,7 @@
 
 | Condition | Required Documents | Creation Order |
 |-----------|-------------------|----------------|
-| New Feature Addition | PRD → [ADR] → Design Doc → Work Plan | After PRD approval |
+| New Feature Addition | PRD → [UXRD] → Design Doc → [ADR] → Work Plan | After PRD approval |
 | ADR Conditions Met (see below) | ADR → Design Doc → Work Plan | Start immediately |
 | 6+ Files | ADR → Design Doc → Work Plan (Required) | Start immediately |
 | 3-5 Files | Design Doc → Work Plan (Recommended) | Start immediately |
@@ -56,6 +56,34 @@
 - Technical selection rationale (→ADR)
 - **Implementation phases** (→Work Plan)
 - **Task breakdown** (→Work Plan)
+
+### UXRD (UX Requirement Documentation)
+
+**Purpose**: Define UX-specific requirements that translate business goals (PRD) into user experience specifications before technical design.
+
+**Includes**:
+- User flows and interaction patterns (Mermaid diagrams)
+- Wireframe/layout guidance (ASCII design mockups allowed)
+- Component behavior specifications (states: default/hover/active/focus/disabled/loading/error)
+- Accessibility requirements (WCAG level, ARIA roles/labels, keyboard navigation)
+- Responsive behavior across breakpoints
+- Content and microcopy requirements for all UI states
+- Design system integration notes (e.g., shadcn/ui components, tokens)
+
+**When Required**:
+- Any change that impacts UI/UX (new screens/components, major flow changes, accessibility/compliance changes)
+
+**Workflow Position**:
+- PRD → UXRD (if UX-impacting) → Design Doc → ADR → Work Plan
+
+**Gating Rules**:
+- Design Doc cannot be accepted if a required UXRD does not exist and is not linked
+- ADRs that record decisions affecting UX must reference the corresponding UXRD
+
+**Excludes**:
+- Low-level technical implementation details (→Design Doc)
+- Technology selection and trade-offs (→ADR)
+- Schedule/tasks (→Work Plan)
 
 ### ADR (Architecture Decision Record)
 
@@ -151,10 +179,11 @@ Interface Change Matrix:
 
 | Document | Path | Naming Convention | Template |
 |----------|------|------------------|----------|
-| PRD | `docs/prd/` | `[feature-name]-prd.md` | `template-en.md` |
-| ADR | `docs/adr/` | `ADR-[4-digits]-[title].md` | `template-en.md` |
-| Design Doc | `docs/design/` | `[feature-name]-design.md` | `template-en.md` |
-| Work Plan | `docs/plans/` | `YYYYMMDD-{type}-{description}.md` | `template-en.md` |
+| PRD | `docs/prd/` | `[feature-name]-prd.md` | `template.md` |
+| UXRD | `docs/uxrd/` | `[feature-name]-uxrd.md` | `template.md` |
+| ADR | `docs/adr/` | `ADR-[4-digits]-[title].md` | `template.md` |
+| Design Doc | `docs/design/` | `[feature-name]-design.md` | `template.md` |
+| Work Plan | `docs/plans/` | `YYYYMMDD-{type}-{description}.md` | `template.md` |
 
 *Note: Work plans are excluded by `.gitignore`
 
@@ -173,9 +202,16 @@ Required diagrams for each document (using mermaid notation):
 | Document | Required Diagrams | Purpose |
 |----------|------------------|---------|
 | PRD | User journey diagram, Scope boundary diagram | Clarify user experience and scope |
+| UXRD | User flow diagram, Wireframe/layout diagram | Clarify interaction and layout requirements |
 | ADR | Option comparison diagram (when needed) | Visualize trade-offs |
 | Design Doc | Architecture diagram, Data flow diagram | Understand technical structure |
 | Work Plan | Phase structure diagram, Task dependency diagram | Clarify implementation order |
+
+## UXRD Cross-Linking and Compliance
+
+- PRD should indicate whether UX impact exists and link to the created UXRD when applicable
+- Design Docs must link the relevant UXRD for UX-impacting changes (review gate)
+- ADRs that document UX-affecting decisions must reference the UXRD that specified the UX requirements
 
 ## Common ADR Relationships
 1. **At creation**: Identify common technical areas (logging, error handling, async processing, etc.), reference existing common ADRs

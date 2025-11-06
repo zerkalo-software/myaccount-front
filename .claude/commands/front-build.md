@@ -44,7 +44,7 @@ Generate tasks from the work plan? (y/n):
 @task-decomposer Read work plan and decompose into atomic tasks:
 - Input: docs/plans/[plan-name].md
 - Output: Individual task files in docs/plans/tasks/
-- Granularity: 1 task = 1 commit = independently executable
+- Granularity: Each task independently executable (commit timing determined by user's chosen strategy)
 ```
 
 ### 3. Verify Generation
@@ -56,9 +56,22 @@ Generate tasks from the work plan? (y/n):
 ✅ **MANDATORY**: After task generation, AUTOMATICALLY proceed to autonomous execution
 ❌ **PROHIBITED**: Starting implementation without task generation
 
+## 💬 Commit Strategy Selection
+
+**🚨 MANDATORY: Ask user about commit strategy BEFORE starting task execution**
+
+```
+How would you like me to create commits?
+A) After each task (detailed history, easy rollback) - Default
+B) After each phase (cleaner history, logical grouping)
+C) After all phases complete (single feature commit)
+```
+
+Store the user's choice and follow it throughout execution.
+
 ## 🧠 Metacognition for Each Task - Frontend Specialized
 
-**MANDATORY EXECUTION CYCLE**: `task-executor-frontend → quality-fixer-frontend → commit`
+**MANDATORY EXECUTION CYCLE**: `task-executor-frontend → quality-fixer-frontend → commit (based on strategy)`
 
 ### Sub-agent Invocation Method
 Use Task tool to invoke sub-agents:
@@ -80,12 +93,15 @@ Execute for EACH task:
 2. **PROCESS structured responses**: When `readyForQualityCheck: true` is detected → EXECUTE quality-fixer-frontend IMMEDIATELY
 3. **USE quality-fixer-frontend**: Execute all quality checks (Lighthouse, bundle size, tests, etc.)
    - Invocation example: `subagent_type: "quality-fixer-frontend"`, `description: "Quality check"`, `prompt: "Execute all frontend quality checks and fixes"`
-4. **EXECUTE commit**: After `approved: true` confirmation, execute git commit IMMEDIATELY
+4. **EXECUTE commit**: After `approved: true` confirmation, execute git commit based on chosen strategy
 
 ### Quality Assurance During Autonomous Execution (Details)
-- task-executor-frontend execution → quality-fixer-frontend execution → **I (Main AI) execute commit** (using Bash tool)
-- After quality-fixer-frontend's `approved: true` confirmation, execute git commit IMMEDIATELY
-- Use `changeSummary` for commit message
+- task-executor-frontend execution → quality-fixer-frontend execution → **I (Main AI) execute commit** (based on chosen strategy)
+- After quality-fixer-frontend's `approved: true` confirmation:
+  - **Strategy A (Per-Task)**: Execute git commit immediately
+  - **Strategy B (Per-Phase)**: Store changeSummary, commit when phase completes
+  - **Strategy C (Final)**: Store all changeSummaries, commit when all phases complete
+- Use accumulated changeSummary for commit message (combine multiple if needed)
 
 **THINK DEEPLY**: Monitor ALL structured responses WITHOUT EXCEPTION and ENSURE every quality gate is passed.
 

@@ -44,7 +44,7 @@ Generate tasks from the work plan? (y/n):
 @task-decomposer Read work plan and decompose into atomic tasks:
 - Input: docs/plans/[plan-name].md
 - Output: Individual task files in docs/plans/tasks/
-- Granularity: 1 task = 1 commit = independently executable
+- Granularity: Each task independently executable (commit timing determined by user's chosen strategy)
 ```
 
 ### 3. Verify Generation
@@ -56,8 +56,21 @@ Generate tasks from the work plan? (y/n):
 ✅ **MANDATORY**: After task generation, AUTOMATICALLY proceed to autonomous execution
 ❌ **PROHIBITED**: Starting implementation without task generation
 
+## 💬 Commit Strategy Selection
+
+**🚨 MANDATORY: Ask user about commit strategy BEFORE starting task execution**
+
+```
+How would you like me to create commits?
+A) After each task (detailed history, easy rollback) - Default
+B) After each phase (cleaner history, logical grouping)
+C) After all phases complete (single feature commit)
+```
+
+Store the user's choice and follow it throughout execution.
+
 ## 🧠 Metacognition for Each Task
-**MANDATORY EXECUTION CYCLE**: `task-executor → quality-fixer → commit`
+**MANDATORY EXECUTION CYCLE**: `task-executor → quality-fixer → commit (based on strategy)`
 
 Before starting EACH task, YOU MUST:
 1. **EXECUTE rule-advisor**: Extract the TRUE ESSENCE of the task

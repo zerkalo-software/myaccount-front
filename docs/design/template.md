@@ -6,6 +6,9 @@
 
 ## Background and Context
 
+### Prerequisite UXRDs (if UX-impacting)
+- [UXRD File]: `docs/uxrd/<feature>-uxrd.md`
+
 ### Prerequisite ADRs
 
 - [ADR File Name]: [Related decision items]
@@ -42,7 +45,7 @@
 
 #### Non-Functional Requirements
 
-- **Performance**: [Response time, throughput requirements]
+- **Performance**: [Aspirational goals - not enforced for MVP. Optimize after product-market fit.]
 - **Scalability**: [Requirements for handling increased load]
 - **Reliability**: [Error rate, availability requirements]
 - **Maintainability**: [Code readability and changeability]
@@ -199,34 +202,35 @@ Each integration point requires E2E verification:
 
 [Technical migration approach, ensuring backward compatibility]
 
-## Test Strategy
+## Test Strategy (MVP Mode)
 
-### Basic Test Design Policy
+### MVP Testing Philosophy
 
-Automatically derive test cases from acceptance criteria:
-- Create at least one test case for each acceptance criterion
-- Implement measurable standards from acceptance criteria as assertions
+**OPTIONAL for MVP development:**
+- Tests are recommended but not required for rapid iteration
+- Focus on business-critical paths only (authentication, payments, data integrity)
+- Full test coverage deferred to post-MVP phase
 
-### Unit Tests
+### Test Types (Priority Order)
 
-[Unit testing policy and coverage goals]
-- Verify individual elements of functional acceptance criteria
+#### 1. Manual Verification (MANDATORY)
+- Verify features work as expected through manual testing
+- Check acceptance criteria fulfillment
 
-### Integration Tests
+#### 2. Business-Critical Tests (RECOMMENDED)
+- **Unit Tests**: Only for complex business logic
+- **Integration Tests**: Only for critical workflows
+- **Coverage Target**: 40-50% (optional, not enforced)
 
-[Integration testing policy and important test cases]
-- Verify combined operations of functional acceptance criteria
+#### 3. E2E Tests (DEFER TO POST-MVP)
+- Implement after product-market fit validation
+- Focus on complete user journeys
 
-### E2E Tests
+#### 4. Performance Tests (OUT OF SCOPE FOR MVP)
+- Defer all performance testing to post-MVP phase
+- Optimize only when actual performance problems measured
 
-[E2E testing policy]
-- Verify entire scenarios of acceptance criteria
-- Confirm functional operation from user perspective
-
-### Performance Tests
-
-[Performance testing methods and standards]
-- Verify performance standards of non-functional acceptance criteria
+**Note:** See @docs/rules/typescript-testing.md for detailed MVP testing guidelines.
 
 ## Security Considerations
 

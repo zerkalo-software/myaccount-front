@@ -73,7 +73,9 @@ function isUser(value: unknown): value is User {
 - Type-safe: Always define Props type explicitly
 
 **Environment Variables**
-- **Use build tool's environment variable system**: `process.env` does not work in browsers
+- **Use Next.js environment variable system**:
+  - Client: `process.env.NEXT_PUBLIC_*` (statically inlined at build)
+  - Server (Server Components/Actions): `process.env.*` (private)
 - **No secrets on client-side**: All frontend code is public, manage secrets in backend
 
 **Dependency Injection**
@@ -161,7 +163,8 @@ Never include sensitive information (password, token, apiKey, secret, creditCard
 
 ## Performance Optimization
 
-- Component Memoization: Use React.memo for expensive components
+- React Compiler First: Compiler handles memoization; add `React.memo`/`useMemo`/`useCallback` only for measured hotspots
 - State Optimization: Minimize re-renders with proper state structure
-- Lazy Loading: Use React.lazy and Suspense for code splitting
-- Bundle Size: Monitor with `npm run build` and keep under 500KB
+- Lazy Loading: Use dynamic import/React.lazy and Suspense for code splitting
+- Bundle Size: Monitor with `pnpm run build` and keep under 500KB
+

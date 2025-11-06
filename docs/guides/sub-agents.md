@@ -45,18 +45,22 @@ graph TD
 I actively utilize the following 8 subagents:
 
 ### Implementation Support Agents
-1. **quality-fixer**: Self-contained processing for overall quality assurance and fixes until completion
-2. **task-decomposer**: Appropriate task decomposition of work plans
-3. **task-executor**: Individual task execution and structured response
+1. **quality-fixer**: Self-contained processing for overall quality assurance and fixes until completion for only backend
+2. **quality-fixer-frontend**: Self-contained processing for overall quality assurance and fixes until completion for only frontend
+3. **task-decomposer**: Appropriate task decomposition of work plans
+4. **task-executor**: Individual task execution and structured response for only backend
+5. **task-executor-frontend**: Individual task execution and structured response for only frontend
 
 ### Document Creation Agents
 4. **requirement-analyzer**: Requirement analysis and work scale determination
 5. **prd-creator**: Product Requirements Document creation
-6. **technical-designer**: ADR/Design Doc creation (with latest technology research features)
-7. **work-planner**: Work plan creation
-8. **document-reviewer**: Document consistency check and approval recommendations
-9. **document-reviewer**: Specialized agent for reviewing document consistency and completeness
-10. **acceptance-test-generator**: Generate separate integration and E2E test skeletons from Design Doc ACs
+6. **technical-designer**: ADR/Design Doc creation for backend (Nest.js, database, etc) (with latest technology research features)
+7. **technical-designer-frontend**: ADR/Design Doc creation for frontend project (React.js, Next.js) (with latest technology research features)
+8. **work-planner**: Work plan creation
+9. **document-reviewer**: Document consistency check and approval recommendations
+10. **document-reviewer**: Specialized agent for reviewing document consistency and completeness
+11. **acceptance-test-generator**: Generate separate integration and E2E test skeletons from Design Doc ACs
+12. **ux-designer**: Specialized agent for UI/UX design, shadcn integration and component specs
 
 ## 🎭 My Orchestration Principles
 
@@ -64,7 +68,7 @@ I actively utilize the following 8 subagents:
 
 I understand each subagent's responsibilities and assign work appropriately:
 
-**What to delegate to task-executor**:
+**What to delegate to task-executor(-frontend)**:
 - Implementation work and test addition
 - Confirmation of added tests passing (existing tests are not covered)
 - Do not delegate quality assurance
@@ -75,10 +79,44 @@ I understand each subagent's responsibilities and assign work appropriately:
 - Self-contained processing until fix completion
 - Final approved judgment (only after fixes are complete)
 
+### Commit Strategy Selection
+
+**🚨 MANDATORY: Always ask user about commit strategy at the start of autonomous execution**
+
+Before starting task execution, I MUST ask the user to choose commit strategy:
+
+**Option A: Per-Task Commits** (Default - Recommended)
+- Create commit after each successful task completion
+- Granularity: 1 task = 1 quality check = 1 commit
+- ✅ Pros: Detailed history, easy rollback, clear progress tracking
+- ❌ Cons: Many commits for large features
+
+**Option B: Per-Phase Commits**
+- Create commit after each phase completion (all tasks in phase done)
+- Granularity: 1 phase = multiple tasks = 1 commit
+- ✅ Pros: Cleaner history, logical grouping by phase
+- ❌ Cons: Harder to rollback to specific task, less granular
+
+**Option C: Single Final Commit**
+- Create commit only after all phases are complete
+- Granularity: Entire implementation = 1 commit
+- ✅ Pros: Single commit for entire feature
+- ❌ Cons: No intermediate commits, difficult rollback, lose progress if interrupted
+
+**Question Format:**
+```
+How would you like me to create commits?
+A) After each task (detailed history, easy rollback)
+B) After each phase (cleaner history, logical grouping)
+C) After all phases complete (single feature commit)
+
+Default is A if not specified.
+```
+
 ### Standard Flow I Manage
 
 **Basic Cycle**: I manage the `task → quality-check (including fixes) → commit` cycle.
-I repeat this cycle for each task to ensure quality.
+The commit timing depends on the chosen commit strategy.
 
 ## 🛡️ Constraints Between Subagents
 
@@ -100,7 +138,7 @@ I repeat this cycle for each task to ensure quality.
 
 ### Pattern 4: Quality Assurance Phase
 **Trigger**: After implementation completion, before commit
-**Decision**: Quality assurance needed → Request quality check and fixes from quality-fixer
+**Decision**: Quality assurance needed → Request quality check and fixes from quality-fixer/quality-fixer-frontend
 
 ## 📏 Scale Determination and Document Requirements
 | Scale | File Count | PRD | ADR | Design Doc | Work Plan |
@@ -126,16 +164,16 @@ Call subagents using the Task tool:
 - description: "Requirement analysis"
 - prompt: "Requirements: [user requirements] Please perform requirement analysis and scale determination"
 
-### Call Example (task-executor)
-- subagent_type: "task-executor"
+### Call Example (task-executor(-frontend))
+- subagent_type: "task-executor(-frontend)"
 - description: "Task execution"
 - prompt: "Task file: docs/plans/tasks/[filename].md Please complete the implementation"
 
 ## Structured Response Specification
 
 Each subagent responds in JSON format:
-- **task-executor**: status, filesModified, testsAdded, readyForQualityCheck
-- **quality-fixer**: status, checksPerformed, fixesApplied, approved
+- **task-executor(-frontend)**: status, filesModified, testsAdded, readyForQualityCheck
+- **quality-fixer(-frontend)**: status, checksPerformed, fixesApplied, approved
 - **document-reviewer**: status, reviewsPerformed, issues, recommendations, approvalReady
 
 
@@ -159,15 +197,16 @@ Integration example:
 ```
 
 ### Update Mode for Document Generation Agents
-Document generation agents (work-planner, technical-designer, prd-creator) can update existing documents in `update` mode.
+Document generation agents (work-planner, technical-designer(-frontend), prd-creator, ux-designer) can update existing documents in `update` mode.
 
 - **Initial creation**: Create new document in create (default) mode
 - **On requirement change**: Edit existing document and add history in update mode
 
 My criteria for timing when to call each agent:
 - **work-planner**: Request updates only before execution
-- **technical-designer**: Request updates according to design changes → Execute document-reviewer for consistency check
+- **technical-designer(-frontend)**: Request updates according to design changes → Execute document-reviewer for consistency check
 - **prd-creator**: Request updates according to requirement changes → Execute document-reviewer for consistency check
+- **ux-designer**: Request updates according to requirement changes → Execute document-reviewer for consistency check
 - **document-reviewer**: Always execute before user approval after PRD/ADR/Design Doc creation/update
 
 ## 📄 My Basic Flow for Work Planning
@@ -178,20 +217,22 @@ According to scale determination:
 ### Large Scale (6+ Files)
 1. requirement-analyzer → Requirement analysis + Check existing PRD **[Stop: Requirement confirmation/question handling]**
 2. prd-creator → PRD creation (update if existing, new creation with thorough investigation if not) → Execute document-reviewer **[Stop: Requirement confirmation]**
-3. technical-designer → ADR creation (if needed) → Execute document-reviewer **[Stop: Technical direction decision]**
-4. technical-designer → Design Doc creation → Execute document-reviewer **[Stop: Design content confirmation]**
+3. ux-designer → UX Design Doc creation (if needed) → Execute document-reviewer **[Stop: UX Design content confirmation]**
+4. technical-designer(-frontend) → ADR creation (if needed) → Execute document-reviewer **[Stop: Technical direction decision]**
+5. technical-designer(-frontend) → Design Doc creation → Execute document-reviewer **[Stop: Design content confirmation]**
+6. acceptance-test-generator → Integration and E2E test skeleton generation
+   → Main AI: Verify generation, then pass information to work-planner (*1)
+7. work-planner → Work plan creation (including integration and E2E test information) **[Stop: Batch approval for entire implementation phase]**
+8. **Start autonomous execution mode**: task-decomposer → Execute all tasks → Completion report
+
+### Medium Scale (3-5 Files)
+1. requirement-analyzer → Requirement analysis **[Stop: Requirement confirmation/question handling]**
+2. technical-designer(-frontend) → Design Doc creation → Execute document-reviewer **[Stop: Technical direction decision]**
+4. ux-designer → UX Design Doc creation (if needed) → Execute document-reviewer **[Stop: UX Design content confirmation]**
 5. acceptance-test-generator → Integration and E2E test skeleton generation
    → Main AI: Verify generation, then pass information to work-planner (*1)
 6. work-planner → Work plan creation (including integration and E2E test information) **[Stop: Batch approval for entire implementation phase]**
 7. **Start autonomous execution mode**: task-decomposer → Execute all tasks → Completion report
-
-### Medium Scale (3-5 Files)
-1. requirement-analyzer → Requirement analysis **[Stop: Requirement confirmation/question handling]**
-2. technical-designer → Design Doc creation → Execute document-reviewer **[Stop: Technical direction decision]**
-3. acceptance-test-generator → Integration and E2E test skeleton generation
-   → Main AI: Verify generation, then pass information to work-planner (*1)
-4. work-planner → Work plan creation (including integration and E2E test information) **[Stop: Batch approval for entire implementation phase]**
-5. **Start autonomous execution mode**: task-decomposer → Execute all tasks → Completion report
 
 ### Small Scale (1-2 Files)
 1. Create simplified plan **[Stop: Batch approval for entire implementation phase]**
@@ -203,8 +244,8 @@ According to scale determination:
 
 **After starting autonomous execution mode**:
 - Batch approval for entire implementation phase delegates authority to subagents
-- task-executor: Implementation authority (can use Edit/Write)
-- quality-fixer: Fix authority (automatic quality error fixes)
+- task-executor(-frontend): Implementation authority (can use Edit/Write)
+- quality-fixer/quality-fixer-frontend: Fix authority (automatic quality error fixes)
 
 ### Definition of Autonomous Execution Mode
 After "batch approval for entire implementation phase" with work-planner, autonomously execute the following processes without human approval:
@@ -214,8 +255,8 @@ graph TD
     START[Batch approval for entire implementation phase] --> AUTO[Start autonomous execution mode]
     AUTO --> TD[task-decomposer: Task decomposition]
     TD --> LOOP[Task execution loop]
-    LOOP --> TE[task-executor: Implementation]
-    TE --> QF[quality-fixer: Quality check and fixes]
+    LOOP --> TE[task-executor(-frontend): Implementation]
+    TE --> QF[quality-fixer/quality-fixer-frontend: Quality check and fixes]
     QF --> COMMIT[Me: Execute git commit]
     COMMIT --> CHECK{Any remaining tasks?}
     CHECK -->|Yes| LOOP
@@ -252,9 +293,12 @@ Stop autonomous execution and escalate to user in the following cases:
    - Direct stop instruction or interruption
 
 ### Quality Assurance During Autonomous Execution
-- Execute task-executor → Execute quality-fixer → **I execute commit** (using Bash tool)
-- After confirming quality-fixer's `approved: true`, immediately execute git commit
-- Use changeSummary for commit message
+- Execute task-executor(-frontend) → Execute quality-fixer(-frontend) → **I execute commit** (based on chosen strategy)
+- After confirming quality-fixer(-frontend)'s `approved: true`:
+  - **Strategy A (Per-Task)**: Execute git commit immediately
+  - **Strategy B (Per-Phase)**: Store changeSummary, commit when phase completes
+  - **Strategy C (Final)**: Store all changeSummaries, commit when all phases complete
+- Use accumulated changeSummary for commit message (combine multiple if needed)
 
 ## 🎼 My Main Roles as Orchestrator
 
@@ -279,13 +323,13 @@ Stop autonomous execution and escalate to user in the following cases:
    - E2E test file: [path] (execute only in final phase)
 
    **On error**: Escalate to user if files are not generated
-3. **Quality Assurance and Commit Execution**: After confirming approved=true, immediately execute git commit
+3. **Quality Assurance and Commit Execution**: After confirming approved=true, execute git commit based on chosen strategy (per-task/per-phase/final)
 4. **Autonomous Execution Mode Management**: Start/stop autonomous execution after approval, escalation decisions
 5. **ADR Status Management**: Update ADR status after user decision (Accepted/Rejected)
 
 ## ⚠️ Important Constraints
 
-- **Quality check is mandatory**: quality-fixer approval needed before commit
+- **Quality check is mandatory**: quality-fixer(-frontend) approval needed before any commit (regardless of strategy)
 - **Structured response mandatory**: Information transmission between subagents in JSON format
 - **Approval management**: Document creation → Execute document-reviewer → Get user approval before proceeding
 - **Flow confirmation**: After getting approval, always check next step with work planning flow (large/medium/small scale)

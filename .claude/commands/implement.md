@@ -35,6 +35,19 @@ When continuing existing flow, verify:
 - Recognize mandatory stopping points
 - Invoke next sub-agent defined in flow
 
+## 💬 Commit Strategy Selection
+
+**🚨 MANDATORY: Ask user about commit strategy when entering autonomous execution mode**
+
+```
+How would you like me to create commits?
+A) After each task (detailed history, easy rollback) - Default
+B) After each phase (cleaner history, logical grouping)
+C) After all phases complete (single feature commit)
+```
+
+Store the user's choice and follow it throughout execution.
+
 ## 📋 sub-agents.md Compliance Execution
 
 **Pre-execution Checklist (MANDATORY)**:
@@ -42,7 +55,8 @@ When continuing existing flow, verify:
 - [ ] Identified current progress position
 - [ ] Clarified next step
 - [ ] Recognized stopping points
-- [ ] Understood task execution quality cycle (task → quality-check → commit)
+- [ ] Understood task execution quality cycle (task → quality-check → commit based on strategy)
+- [ ] Asked user about commit strategy (if entering autonomous mode)
 
 **Flow Deviation PROHIBITED**: Deviating from sub-agents.md defined flows is strictly forbidden. Specifically:
 - Never skip quality-fixer before committing
@@ -63,10 +77,14 @@ DO NOT invoke rule-advisor under any circumstances (Task tool rule-advisor speci
 ### Task Execution Quality Cycle Management
 **ABSOLUTE RULE**: After task-executor execution, MUST execute:
 1. quality-fixer invocation (until approved: true is returned)
-2. git commit execution (using Bash tool)
+2. git commit execution (using Bash tool) - timing based on chosen strategy:
+   - **Strategy A (Per-Task)**: Commit immediately after approved
+   - **Strategy B (Per-Phase)**: Store changeSummary, commit when phase completes
+   - **Strategy C (Final)**: Store all changeSummaries, commit when all phases complete
 3. Next task execution or completion report
 
-**NO OMISSION**: Skipping this cycle guarantees implementation quality failure
+**NO OMISSION**: Skipping quality-fixer guarantees implementation quality failure
+**COMMIT TIMING**: Follow the user's chosen commit strategy strictly
 
 ### Test Information Communication
 After acceptance-test-generator execution, when calling work-planner, communicate:

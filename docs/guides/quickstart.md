@@ -47,9 +47,14 @@ Depending on the Claude Code model you're using, it may automatically proceed to
 
 After design approval, integration test skeletons and a work plan are created. Once you review the implementation steps (requesting changes if needed) and approve, the actual implementation begins.
 
-The AI breaks down the work plan into single-commit task units and autonomously implements each task using a TDD approach. After each task, it performs a defined 6-step quality check, fixes any errors, and creates a commit if everything passes. You can simply watch the progress.
+The AI will ask you about your preferred commit strategy:
+- **A) Per-Task** (default): One commit per task - detailed history, easy rollback
+- **B) Per-Phase**: One commit per phase - cleaner history, logical grouping
+- **C) Final**: One commit for entire feature - single commit
 
-When all tasks are complete, it will report "Implementation complete." Check `git log` to see a clean series of commits.
+After choosing, the AI breaks down the work plan into task units and autonomously implements each using a TDD approach. After each task, it performs a defined 6-step quality check, fixes any errors, and creates commits based on your chosen strategy. You can simply watch the progress.
+
+When all tasks are complete, it will report "Implementation complete." Check `git log` to see your commits based on the chosen strategy.
 
 ## Development Philosophy of This Boilerplate
 

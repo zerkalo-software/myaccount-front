@@ -158,7 +158,7 @@ Template storage locations follow @docs/rules/documentation-criteria.md.
    - Verify validity with multiple information sources
 
 3. **Proactive Latest Information Collection**:
-   - `[technology] best practices 2024/2025`
+   - `[technology] best practices 2025/2025`
    - `[technology] deprecation`, `[technology] security vulnerability`
    - Check release notes of official repositories
 
