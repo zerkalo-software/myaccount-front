@@ -118,8 +118,8 @@ rules:
 
   frontend-ai-development-guide:
     file: "frontend/ai-development-guide.md"
-    tags: [frontend, react, anti-patterns, technical-judgment, debugging, quality-commands, rule-of-three, implementation, lighthouse, bundle-size]
-    typical-use: "Frontend technical decision criteria, React anti-pattern detection, Lighthouse quality checks, bundle size optimization, frontend debugging"
+    tags: [frontend, react, anti-patterns, technical-judgment, debugging, quality-commands, rule-of-three, implementation, lighthouse, bundle-size, fallback-design, bem, i18n]
+    typical-use: "React 19 anti-pattern detection (prop drilling 3+ levels, manual memoization without measurement, monolithic stores), Rule of Three refactoring criteria, fail-fast fallback design, technical uncertainty evaluation, impact analysis (Discovery→Understanding→Identification), BEM CSS naming, i18n localization enforcement"
     size: medium
     key-references:
       - "Rule of Three - Martin Fowler"
@@ -142,8 +142,8 @@ rules:
   # Frontend Architecture Rules
   frontend-data-flow:
     file: "architecture/frontend-data-flow.md"
-    tags: [frontend, architecture, data-flow, zustand, useshallow, multiple-stores, performance, react]
-    typical-use: "Frontend data flow design, Zustand state management with useShallow, multiple domain stores architecture, re-render optimization, cross-store communication patterns"
+    tags: [frontend, architecture, data-flow, zustand, useshallow, multiple-stores, performance, react, unidirectional-flow, cross-store]
+    typical-use: "Unidirectional data flow with Zustand, useShallow for 60% fewer re-renders (multiple properties), direct selectors for single properties, multiple domain stores (Auth/Canvas/Elements/History separation), cross-store communication (Direct/Subscription/Coordinator/EventBus patterns), immutable updates (manual spreads for shallow, Immer for deep)"
     size: large
     key-references:
       - "Zustand Documentation - Official"
@@ -159,8 +159,8 @@ rules:
 
   frontend-error-handling:
     file: "architecture/frontend-error-handling.md"
-    tags: [frontend, error-handling, try-catch, typed-errors, zustand, retry, exponential-backoff, sentry, user-feedback]
-    typical-use: "Frontend error handling patterns, try-catch with typed errors, error state management in Zustand, exponential backoff retry, Sentry integration, user-facing error messages"
+    tags: [frontend, error-handling, try-catch, typed-errors, zustand, retry, exponential-backoff, sentry, user-feedback, error-boundaries, combine]
+    typical-use: "Try-catch at boundaries (async ops, external calls, risky operations), error state with Zustand combine middleware, typed errors (instanceof Error checks, custom error classes), exponential backoff retry with jitter (3-5 retries, 1-30s delays, configurable policies), Sentry integration (breadcrumbs, session replay, error tracking), Error Boundaries with react-error-boundary, cross-store error coordination"
     size: large
     key-references:
       - "Error Handling Best Practices - MDN"
@@ -177,20 +177,36 @@ rules:
 
   frontend-react:
     file: "architecture/frontend-react.md"
-    tags: [frontend, react, function-components, props-driven, custom-hooks, testing, atomic-design]
-    typical-use: "React component architecture, function components patterns, props-driven design, custom hooks for logic reuse, atomic design methodology, component testing requirements"
-    size: small
+    tags: [frontend, react, function-components, props-driven, custom-hooks, testing, atomic-design, react-compiler, server-components, suspense, transitions, concurrent, code-splitting, performance]
+    typical-use: "React 19 patterns with compiler optimization, Server Components and Server Actions, concurrent features (useTransition, Suspense), Next.js rendering strategies (SSG/ISR/Streaming SSR), code splitting and lazy loading, Core Web Vitals optimization"
+    size: large
     key-references:
       - "React Official Documentation"
-      - "Atomic Design - Brad Frost"
-      - "Props-driven Design - React Best Practices"
-      - "Custom Hooks - React Documentation"
-    sections: []
+      - "React 19 Compiler - Official"
+      - "Next.js Server Components - Official"
+      - "Core Web Vitals - Google"
+      - "React Concurrent Features - React Docs"
+    sections:
+      - "State Management Integration"
+      - "1. Automatic Optimization with React Compiler"
+      - "2. Server Components and Rendering Optimization"
+      - "3. Next.js Rendering Strategies"
+      - "4. Concurrent Features and Interactivity Optimization"
+      - "5. Code Splitting and Lazy Loading"
+      - "6. Image Optimization"
+      - "7. Memoization and Render Optimization"
+      - "8. Next.js Caching Strategies"
+      - "9. Middleware and Edge Functions"
+      - "10. Error Handling"
+      - "11. Core Web Vitals Optimization"
+      - "12. Bundle Size Optimization"
+      - "13. Best Practices"
+      - "Related Documentation"
 
   frontend-state-management:
     file: "architecture/frontend-state-management.md"
-    tags: [frontend, zustand, useshallow, combine, multiple-stores, state-management, performance, devtools, persist]
-    typical-use: "Zustand state management architecture, useShallow for re-render prevention, combine middleware for type inference, multiple domain stores strategy, cross-store communication, middleware composition"
+    tags: [frontend, zustand, useshallow, combine, multiple-stores, state-management, performance, devtools, persist, immer, subscribeWithSelector]
+    typical-use: "Zustand v5+ with combine middleware (automatic type inference, state/actions separation), useShallow for 60% fewer re-renders, multiple domain stores (3x faster hydration), immutable updates (manual spreads for shallow 1-3 levels, Immer for deep 4+ levels), middleware stack (devtools, persist, subscribeWithSelector), store testing patterns"
     size: large
     key-references:
       - "Zustand Documentation - Official"
@@ -209,8 +225,8 @@ rules:
 
   frontend-type-system:
     file: "architecture/frontend-type-system.md"
-    tags: [frontend, typescript, zod, type-guards, runtime-validation, zustand-types, strict-mode, branded-types, performance]
-    typical-use: "TypeScript strict mode configuration, Zod schema validation, type-safe Zustand stores with combine, useShallow type inference, runtime validation at boundaries, Zod performance optimization"
+    tags: [frontend, typescript, zod, type-guards, runtime-validation, zustand-types, strict-mode, branded-types, performance, discriminated-unions]
+    typical-use: "TypeScript strict mode (noImplicitAny, strictNullChecks, noUncheckedIndexedAccess), Zod validation at boundaries (API responses, localStorage, user input), type guards for discriminated unions (type predicate functions), Zustand StateCreator for slice patterns, branded types for IDs, Zod performance optimization (pick for lists 16x faster, cache 50x faster, type guards for high-frequency 100x faster)"
     size: large
     key-references:
       - "TypeScript Strict Mode - Official Docs"
