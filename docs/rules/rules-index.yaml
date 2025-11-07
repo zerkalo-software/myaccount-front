@@ -18,14 +18,16 @@ rules:
 
   documentation-criteria:
     file: "documentation-criteria.md"
-    tags: [documentation, adr, prd, design-doc, work-plan, decision-matrix]
-    typical-use: "Implementation start scale assessment, document creation decisions, ADR/PRD/Design Doc/work plan creation criteria"
+    tags: [documentation, adr, prd, design-doc, work-plan, decision-matrix, file-count-calculation, type-complexity-matrix, architecture-examples, state-counting, async-coordination, ux-impact-levels, scope-estimation, uxrd]
+    typical-use: "File count calculation (new + modified, exclude read-only/tests/auto-generated, edge cases: refactor=1, co-located=1), ADR triggers quantified (type complexity 5 metrics with Low/Medium/High bands, architecture changes 6 YES examples, state counting 3+ distinct conditions, async coordination 5+ processes), UX impact classification (Major: user journey/navigation, Medium: component behavior/layout, Minor: visual-only), scope estimation workflow (4 steps, 5-11 minutes: list changes → count files → check ADR conditions → apply matrix), document creation decision matrix (1-2 files none, 3-5 Design Doc + Work Plan, 6+ ADR + Design Doc + Work Plan)"
     size: medium
     key-references:
       - "ADR Methodology - Michael Nygard"
       - "Design Doc Culture - Google Engineering Practices"
       - "Single Source of Truth"
+      - "UXRD - User Experience Requirements"
     sections:
+      - "File Count Calculation"
       - "Creation Decision Matrix"
       - "ADR Creation Conditions (Required if Any Apply)"
       - "Detailed Document Definitions"
@@ -34,7 +36,9 @@ rules:
       - "ADR Status"
       - "AI Automation Rules"
       - "Diagram Requirements"
+      - "UXRD Cross-Linking and Compliance"
       - "Common ADR Relationships"
+      - "Pre-Implementation Scope Estimation (5-11 min)"
 
   implementation-approach:
     file: "architecture/implementation-approach.md"
@@ -56,8 +60,8 @@ rules:
   # Frontend-specific Rules
   frontend-typescript:
     file: "frontend/typescript.md"
-    tags: [frontend, react, implementation, type-safety, function-components, props-driven, async, refactoring, coding-style]
-    typical-use: "React component creation, Props type definitions, frontend TypeScript development"
+    tags: [frontend, react, implementation, type-safety, function-components, props-driven, async, refactoring, coding-style, prerequisites, component-splitting, testability, thresholds, decision-matrix, state-structure]
+    typical-use: "React 19+ TypeScript strict mode development, component splitting triggers (≥10 props, >300 lines, >16ms render), API type conversion (unknown → Zod → strict types), testability requirements (≥65% coverage, <100ms tests, dependency injection), error handling elements (log, state, propagation, user message), state structure decision matrix (useState vs Zustand vs Context vs useReducer with <16ms render, <10 re-renders/interaction thresholds)"
     size: medium
     key-references:
       - "React Function Components - React Official"
@@ -66,6 +70,7 @@ rules:
       - "Clean Code - Robert C. Martin"
       - "TypeScript satisfies Operator - Microsoft"
     sections:
+      - "Prerequisites"
       - "Basic Principles"
       - "Comment Writing Rules"
       - "Type Safety"
@@ -118,8 +123,8 @@ rules:
 
   frontend-ai-development-guide:
     file: "frontend/ai-development-guide.md"
-    tags: [frontend, react, anti-patterns, technical-judgment, debugging, quality-commands, rule-of-three, implementation, lighthouse, bundle-size, fallback-design, bem, i18n]
-    typical-use: "React 19 anti-pattern detection (prop drilling 3+ levels, manual memoization without measurement, monolithic stores), Rule of Three refactoring criteria, fail-fast fallback design, technical uncertainty evaluation, impact analysis (Discovery→Understanding→Identification), BEM CSS naming, i18n localization enforcement"
+    tags: [frontend, react, anti-patterns, technical-judgment, debugging, quality-commands, rule-of-three, implementation, lighthouse, bundle-size, fallback-design, bem, i18n, thresholds, complexity-metrics, cyclomatic, feature-boundary, uncertainty-levels, context-selection]
+    typical-use: "Anti-pattern thresholds (3+ type assertions, 300+ lines, 5+ memoizations, 10+ store properties, 4+ nesting levels), feature boundary (file/directory/user story, 3rd catch → review), complexity metrics (cyclomatic 11+, function 51+ lines, nesting 4+, params 5+), readability degradation (abstraction layers, parameter count, generics, understanding time), technical uncertainty levels (High 80%+, Medium 50-79%, Low <50% with verification), context selection (include/exclude rules, 500-1000 line budget), React 19 anti-pattern detection, Rule of Three refactoring, fail-fast fallback design, impact analysis (Discovery→Understanding→Identification)"
     size: medium
     key-references:
       - "Rule of Three - Martin Fowler"
@@ -127,7 +132,9 @@ rules:
       - "Lighthouse Performance Guide - Google"
       - "5 Whys - Toyota Production System"
       - "Single Responsibility Principle (SRP) - Clean Code"
+      - "Cyclomatic Complexity - McCabe"
     sections:
+      - "Project-specific Defaults (This Repository)"
       - "Technical Anti-patterns (Red Flag Patterns)"
       - "Fallback Design Principles"
       - "Rule of Three - Criteria for Code Duplication"
