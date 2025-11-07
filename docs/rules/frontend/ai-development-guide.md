@@ -31,6 +31,20 @@ Immediately stop and reconsider design when detecting the following patterns:
 13. **Non-BEM CSS class names** - All CSS classes must follow BEM (`block__element--modifier`)
 14. **Hardcoded user-visible strings** - Must be localized via i18n keys
 
+**Anti-Pattern Detection Thresholds**:
+
+| Anti-Pattern | Threshold | Detection |
+|--------------|-----------|-----------|
+| Similar code | 3+ occurrences (80%+ similarity) | Search codebase |
+| Type assertions (as) | 3+ per file | `grep -c " as " file.tsx` |
+| Prop drilling | 3+ levels | Count nesting depth |
+| Massive component | 300+ lines | Exclude imports |
+| Manual memoization | 5+ per component | Count memo/useMemo/useCallback |
+| Monolithic store | 10+ state properties | Count store keys |
+| Deep nesting | 4+ levels without Immer | Count dots in update |
+
+Trigger immediate design reconsideration when ANY threshold exceeded.
+
 ### Design Anti-patterns
 - **"Make it work for now" thinking** - Accumulation of technical debt
 - **Patchwork implementation** - Unplanned additions to existing components
@@ -56,6 +70,16 @@ Design philosophy that prioritizes improving primary code reliability over fallb
 - Verify Design Doc definition before implementing fallbacks
 - Properly log errors and make failures explicit
 
+**Feature Boundary** (for catch statement counting):
+
+Definition: File, feature directory (`src/features/auth/*`), or related components implementing single user story.
+
+Example: "User Authentication" = login form + auth hook + token storage
+
+Trigger: 3rd try-catch in same boundary → Design review required
+
+Review: Centralize error handling in hook/utility if patterns repeat.
+
 ## Rule of Three - Criteria for Code Duplication
 
 How to handle duplicate code based on Martin Fowler's "Refactoring":
@@ -80,6 +104,32 @@ How to handle duplicate code based on Martin Fowler's "Refactoring":
 - Possibility of evolving in different directions
 - Significant readability decrease from commonalization
 - Simple helpers in test code
+
+**Code Complexity Thresholds**:
+
+| Metric | Simple | Moderate | Complex (commonalize) |
+|--------|--------|----------|----------------------|
+| Cyclomatic complexity | 1-5 | 6-10 | 11+ |
+| Function length | 1-20 lines | 21-50 | 51+ |
+| Nesting depth | 1-2 levels | 3 | 4+ |
+| Parameters | 0-2 | 3-4 | 5+ |
+
+**Decision**: Complex + duplicated 3+ times → commonalize required; Moderate + 3+ → consider; Simple → duplication acceptable
+
+**Cyclomatic**: Each if/else/case/loop/catch/&&/|| = +1
+
+Example: `if (a && b)` = 2 (if=1, &&=1)
+
+**Readability Degradation** (before/after commonalization):
+
+| Metric | Acceptable | Rejected |
+|--------|------------|----------|
+| Abstraction layers | +0-1 | +3+ |
+| Parameter count | +0-2 | +5+ |
+| Generic types | 0-1 | 3+ |
+| Understanding time | +0-30s | +60s+ |
+
+Don't commonalize if 2+ metrics in "Rejected" range.
 
 ### Implementation Example
 ```typescript
@@ -119,6 +169,16 @@ function EmailInput({ context }: { context: 'user' | 'contact' | 'admin' }) { /*
   Fallback: use established patterns
   ```
 - For low certainty cases, create minimal verification code first
+
+**Technical Uncertainty Levels**:
+
+| Level | Criteria | Action |
+|-------|----------|--------|
+| High (80%+) | Production examples + docs + experience | Implement directly |
+| Medium (50-79%) | Docs + some examples, no experience | POC first (2-4h) |
+| Low (<50%) | Experimental, limited docs | Mandatory verification (1-2h, 50-100 lines, 1-2 files) |
+
+**Verification** (Low certainty): Test core API, integration, performance, error handling. Proceed if succeeds, use fallback if fails.
 
 ### Pattern 5: Insufficient Existing Code Investigation
 **Symptom**: Duplicate implementations, architecture inconsistency, integration failures
@@ -221,6 +281,14 @@ Grep -n "propsType\|StateType" -o content
 - Caller's purpose and context
 - Component hierarchy
 - Data flow: Props → State → Event handlers → Callbacks
+
+**Context Selection** (impact analysis):
+
+Include: Direct callers, props/types used, data flow participants (2+ hops), error boundaries, conditional rendering, event chains
+
+Exclude: Type-only imports, tests (unless debugging), configs (unless behavior-affecting), 3+ levels indirect
+
+Limits: 50-100 lines per component, full hooks (<50), 10-20 lines types. Total budget: 500-1000 lines.
 
 #### 3. Identification
 Structured impact report (mandatory):
