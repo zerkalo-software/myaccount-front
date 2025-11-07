@@ -1,5 +1,11 @@
 # TypeScript Development Rules (Frontend)
 
+## Prerequisites
+
+- React 19+, Next.js 15+, TypeScript 5+ (strict mode), Node.js 18+, pnpm
+- tsconfig: `strict: true`, `noImplicitAny: true`, `strictNullChecks: true`, `noUncheckedIndexedAccess: true`
+- Tools: ESLint (Next.js config), Biome (planned), Vitest (planned)
+
 ## Basic Principles
 
 ✅ **Aggressive Refactoring** - Prevent technical debt and maintain health
@@ -47,11 +53,40 @@ function isUser(value: unknown): value is User {
 
 **Type Complexity Management**
 - **Props Design**:
-  - Props count: 3-7 props ideal (consider component splitting if exceeds 10)
-  - Optional Props: 50% or less (consider default values or Context if excessive)
+  - Props count: 3-7 props ideal
+  - Optional Props: 50% or less
   - Nesting: Up to 2 levels (flatten deeper structures)
 - Type Assertions: Review design if used 3+ times
-- **External API Types**: Relax constraints and define according to reality (convert appropriately internally)
+
+**Component Splitting Triggers** (if ANY met → split):
+- Props count ≥ 10
+- Optional props > 50%
+- File > 300 lines
+- Render time > 16ms (React DevTools)
+
+**Strategies** (priority order):
+1. Presentational/container (if business logic exists)
+2. Atoms/molecules (if duplication exists)
+3. Separate optionals (if optional props > 50%)
+4. Composition with children (if wrapper pattern)
+
+**External API Type Conversion**:
+
+Process: Receive as `unknown` → Validate with Zod → Convert to strict internal types
+
+```typescript
+// Pattern
+const api: unknown = await fetch('/api').then(r => r.json())
+const validated = APISchema.safeParse(api)
+if (!validated.success) return { ok: false, error: validated.error }
+return { ok: true, value: toInternalType(validated.data) }
+```
+
+| Conversion Type | Rule |
+|----------------|------|
+| Optional → Required | Provide default or generate |
+| Loose → Strict | Validate with Zod + convert |
+| any → Specific | Parse + type-guard |
 
 ## Coding Conventions
 
@@ -79,7 +114,21 @@ function isUser(value: unknown): value is User {
 - **No secrets on client-side**: All frontend code is public, manage secrets in backend
 
 **Dependency Injection**
-- **Custom Hooks for dependency injection**: Ensure testability and modularity
+- **Custom Hooks for dependency injection**: Inject dependencies as parameters (not hard-coded imports)
+
+**Testability Requirements**:
+
+1. **Inject dependencies** (not hard-coded imports)
+   ```typescript
+   // ✅ function useData(fetcher: Fetcher)
+   // ❌ import { fetcher } from './api'
+   ```
+
+2. **Coverage**: Custom hooks ≥ 65%, must test mocks + loading/error states
+
+3. **Performance**: Unit test < 100ms, integration < 500ms
+
+See frontend/typescript-testing.md for patterns.
 
 **Asynchronous Processing**
 - Promise Handling: Always use `async/await`
@@ -99,7 +148,17 @@ function isUser(value: unknown): value is User {
 
 ## Error Handling
 
-**Absolute Rule**: Error suppression prohibited. All errors must have log output and appropriate handling.
+**Absolute Rule**: Error suppression prohibited. All errors must have log output and proper handling.
+
+**Error Handling Requirements**:
+
+Required elements:
+1. Log: error.name, error.message, error.stack, timestamp, context
+2. State update: Set error message + isLoading = false (async ops)
+3. Propagation: Error Boundary (components), state + optional throw (hooks), always throw (utils)
+4. User message: Friendly message + actionable step
+
+See architecture/frontend-error-handling.md for full patterns.
 
 **Fail-Fast Principle**: Fail quickly on errors to prevent continued processing in invalid states
 ```typescript
@@ -164,7 +223,18 @@ Never include sensitive information (password, token, apiKey, secret, creditCard
 ## Performance Optimization
 
 - React Compiler First: Compiler handles memoization; add `React.memo`/`useMemo`/`useCallback` only for measured hotspots
-- State Optimization: Minimize re-renders with proper state structure
 - Lazy Loading: Use dynamic import/React.lazy and Suspense for code splitting
 - Bundle Size: Monitor with `pnpm run build` and keep under 500KB
+
+**State Structure Optimization**:
+
+| Pattern | Trigger | Re-render Impact |
+|---------|---------|------------------|
+| Separate useState | 1-3 independent values | Minimal |
+| Single object useState | 4+ related values | Moderate |
+| Zustand + useShallow | Shared across 3+ components | Optimized (60% fewer) |
+| Context | Deep drilling (3+ levels) | All consumers |
+| useReducer | Complex state (5+ actions) | Controlled |
+
+Thresholds: Render < 16ms, re-renders < 10/interaction. See architecture/frontend-state-management.md.
 
