@@ -1,5 +1,16 @@
 # Documentation Creation Criteria
 
+## File Count Calculation
+
+**Counts**: New files + Modified files (exclude: read-only, tests, auto-generated)
+
+**Estimation**:
+1. List affected components/features
+2. Count new + modified implementation files
+3. Apply matrix: 1-2 files (none), 3-5 files (Design Doc + Work Plan), 6+ files (ADR + Design Doc + Work Plan)
+
+**Edge cases**: Extensive refactor in 1 file = 1 file; Component + co-located style = 1 file; 3 modified + 2 new = 5 total
+
 ## Creation Decision Matrix
 
 | Condition | Required Documents | Creation Order |
@@ -20,6 +31,20 @@
 - **Type responsibility changes** (e.g., DTO→Entity)
   - Rationale: Conceptual model changes affect design philosophy
 
+**Type System Complexity**:
+
+| Metric | Low | Medium | High (ADR required) |
+|--------|-----|--------|---------------------|
+| Nesting depth | 1-2 | 3 | 4+ |
+| Generic parameters | 0-1 | 2 | 3+ |
+| Union members | 1-3 | 4-6 | 7+ |
+| Conditional types | 0 | 1 | 2+ |
+| Usage locations | 1-2 | 3-5 | 6+ |
+
+ADR required: 3+ metrics in "High" range
+
+**Type change documentation** (3+ locations): Impact analysis, migration strategy, breaking changes, rollback plan
+
 ### 2. Data Flow Changes
 - **Storage location changes** (DB→File, Memory→Cache)
 - **Processing order changes with 3+ steps**
@@ -29,12 +54,44 @@
 ### 3. Architecture Changes
 - Layer addition, responsibility changes, component relocation
 
+**Architecture Changes** (concrete examples requiring ADR):
+
+| Change Type | Example | ADR Required? |
+|-------------|---------|---------------|
+| **Layer addition** | Add caching layer between API and UI | ✅ YES |
+| **Responsibility change** | Move validation from UI to API | ✅ YES |
+| **Component relocation** | Move shared utilities to library package | ✅ YES |
+| **Pattern change** | Props drilling → Zustand store | ✅ YES |
+| **Data flow change** | REST → GraphQL | ✅ YES |
+| **State management change** | Context → Zustand | ✅ YES |
+
+**Non-architecture changes** (no ADR):
+- ❌ Rename component (no responsibility change)
+- ❌ Extract utility function within same file (no relocation)
+- ❌ Add new component to existing layer (no layer change)
+
 ### 4. External Dependency Changes
 - Library/framework/external API introduction or replacement
 
 ### 5. Complex Implementation Logic (Regardless of Scale)
 - Managing 3+ states
 - Coordinating 5+ asynchronous processes
+
+**"Managing States"** (3+ states threshold):
+
+Count distinct application conditions (isLoading/isSuccess/isError = 3). Don't count entity properties (name/email = 1 compound state).
+
+Examples:
+- States: isLoading/isSuccess/isError = 3 ✅ | name/email/age = 1 compound ❌
+- Async: 6 processes (fetchUser + fetchSettings + fetchActivity + ws + timer + tracking) → ADR required
+
+ADR required: 3+ distinct states + transitions with business rules
+
+**"Coordinating Async"** (5+ processes threshold):
+
+Count: Independent API calls, WebSocket connections, timers, file streams
+
+Example requiring ADR: fetchUser + fetchSettings + fetchActivity + WebSocket + autoSave timer + tracking = 6 processes
 
 ## Detailed Document Definitions
 
@@ -72,6 +129,18 @@
 
 **When Required**:
 - Any change that impacts UI/UX (new screens/components, major flow changes, accessibility/compliance changes)
+
+**UX Impact Levels**:
+
+| Level | Definition | UXRD Required? |
+|-------|------------|----------------|
+| Major | User journey/navigation changes | ✅ YES |
+| Medium | Component behavior/layout changes | ✅ YES |
+| Minor | Visual-only changes | ❌ NO |
+
+**Indicators** (any met → Major): Navigation structure, journey steps, state transitions, new interactions, accessibility changes
+
+Decision: Major OR Medium → UXRD required
 
 **Workflow Position**:
 - PRD → UXRD (if UX-impacting) → Design Doc → ADR → Work Plan
@@ -218,3 +287,13 @@ Required diagrams for each document (using mermaid notation):
 2. **When missing**: Consider creating necessary common ADRs
 3. **Design Doc**: Specify common ADRs in "Prerequisite ADRs" section
 4. **Compliance check**: Verify design aligns with common ADR decisions
+
+## Pre-Implementation Scope Estimation (5-11 min)
+
+**Process**:
+1. **List changes** (2-5 min): Feature → Components/files affected
+2. **Count files** (1-2 min): New + modified implementation files
+3. **Check ADR conditions** (2-3 min): Type (3+ locations?), Architecture, Async (5+?), States (3+?)
+4. **Apply matrix** (1 min): Files + conditions → Required docs
+
+**Example**: "Add profile editing" → 5 files (page, validation, API, upload, header) + Avatar type in 4+ locations → ADR + Design Doc + Work Plan
