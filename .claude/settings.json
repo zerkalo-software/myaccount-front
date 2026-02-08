@@ -1,12 +1,13 @@
 {
   "includeCoAuthoredBy": false,
-  "enableAllProjectMcpServers": true,
   "permissions": {
     "ask": [
       "Bash(git commit:*)"
     ]
   },
-  "hooks": {
-   
+  "enableAllProjectMcpServers": true,
+  "hooks": {},
+  "enabledPlugins": {
+    "frontend-overture@overture": true
   }
 }

@@ -1,36 +1,3 @@
 {
-  "mcpServers": {
-    "playwright": {
-      "command": "cmd",
-      "args": [
-        "/c",
-        "npx",
-        "@playwright/mcp@latest"
-      ]
-    },
-    "shadcn": {
-      "type": "http",
-      "url": "https://www.shadcn.io/api/mcp"
-    },
-    "nx-mcp": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "nx",
-        "mcp"
-      ]
-    },
-    "context7": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": [
-        "/c",
-        "npx",
-        "-y",
-        "@upstash/context7-mcp",
-        "--api-key",
-        "ctx7sk-5df32a1b-19f6-42a2-b514-7441d644889d"
-      ]
-    }
-  }
+  "mcpServers": {}
 }

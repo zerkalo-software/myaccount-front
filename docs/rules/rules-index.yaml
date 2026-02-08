@@ -5,16 +5,17 @@ rules:
   # Core Project Rules
   project-context:
     file: "project-context.md"
-    tags: [context, project-specific, implementation, forex, trading, multi-broker, real-time]
-    typical-use: "Forex trading platform context, multi-broker integration requirements, real-time data synchronization constraints, regulatory compliance considerations"
+    tags: [context, project-specific, b2b, white-label, forex, trader-room, broker, xcritical]
+    typical-use: "B2B white-label trader room context, forex broker customer segments (small/medium/large), B2C trader segments (beginner/active/copy/VIP/dormant), xCritical CRM backend dependency, white-label per-broker customization constraints, KYC/AML compliance requirements, mobile-first (55%) design decisions"
     size: small
     key-references:
-      - "Project-specific (forex trading platform)"
+      - "B2B white-label forex trader room"
+      - "xCritical CRM backend integration"
+      - "15+ production broker deployments"
     sections:
       - "Project Overview"
       - "Development Structure"
       - "Business Constraints"
-      - "Implementation Principles"
 
   documentation-criteria:
     file: "documentation-criteria.md"
